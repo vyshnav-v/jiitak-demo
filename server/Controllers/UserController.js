@@ -4,15 +4,22 @@ import generateToken from "../Middleware/generateTokens.js";
 
 export const Register = async (req, res) => {
   try {
-    const {username ,email, password } = req.body;
+    const { username, email, password } = req.body;
     const userExists = await User.findOne({ email: email });
 
     if (userExists) {
       res.status(400).json({ message: "User already exists" });
       return;
     }
+    // Password validation rules
+    const passwordRegex = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[\W_]).{8,}$/;
 
-    const saltRounds = 10; // You can adjust this value as needed
+    if (!password.match(passwordRegex)) {
+      return res.status(400).json({
+        message:
+          "Password must be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, one digit, and one special character.",
+      });
+    }
 
     // Generate salt and hash the password
     const salt = await bcrypt.genSalt();
